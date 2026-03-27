@@ -5,19 +5,14 @@ import os
 from datetime import datetime, timedelta
 import random
 import pytz
+import requests
+from bs4 import BeautifulSoup
+from urllib.parse import urlparse, parse_qs
 from twilio.rest import Client
 
 # --- Configuration ---
 PLAYERS = ["Porwal", "Baba", "Teja", "Sahil", "Bansal", "Naman"]
-DATA_FILE = "ipl_bets.json"
-IST = pytz.timezone("Asia/Kolkata")
-
-# Use Streamlit secrets in cloud; fall back to placeholders locally
-TWILIO_ACCOUNT_SID = st.secrets.get("TWILIO_ACCOUNT_SID", "your_twilio_account_sid")
-TWILIO_AUTH_TOKEN = st.secrets.get("TWILIO_AUTH_TOKEN", "your_twilio_auth_token")
-TWILIO_FROM_NUMBER = "whatsapp:+14155238886"  # Twilio sandbox default
-
-PLAYER_NUMBERS = {
+PLAYER_WHATSAPP = {
     "Porwal": "whatsapp:+917710012158",
     "Baba": "whatsapp:+917710033095",
     "Teja": "whatsapp:+917045688001",
@@ -25,6 +20,13 @@ PLAYER_NUMBERS = {
     "Bansal": "whatsapp:+917045688066",
     "Naman": "whatsapp:+918447959964",
 }
+DATA_FILE = "ipl_bets.json"
+IST = pytz.timezone("Asia/Kolkata")
+
+# Twilio (set in Streamlit secrets)
+TWILIO_ACCOUNT_SID = st.secrets.get("TWILIO_ACCOUNT_SID", "your_twilio_account_sid")
+TWILIO_AUTH_TOKEN = st.secrets.get("TWILIO_AUTH_TOKEN", "your_twilio_auth_token")
+TWILIO_FROM_NUMBER = "whatsapp:+14155238886"
 
 st.set_page_config(page_title="PoKaBaSaNaTe Premier League", layout="wide")
 
@@ -32,11 +34,8 @@ st.set_page_config(page_title="PoKaBaSaNaTe Premier League", layout="wide")
 st.markdown(
     """
     <style>
-    [data-testid="stAppViewContainer"] {
-        background-color: #1D3D8D;
-        color: #FFFFFF;
-    }
-    h1, h2, h3, h4 {
+    [data-testid="stAppViewContainer"] {background-color: #1D3D8D; color: #FFFFFF;}
+    h1, h {
         color: #FFD700 !important;
     }
     .stTabs [data-baseweb="tab-list"] button {
