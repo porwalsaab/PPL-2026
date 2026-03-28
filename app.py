@@ -54,7 +54,7 @@ if 'results_shown' not in st.session_state:
 
 # --- Login Function ---
 def login_via_whatsapp():
-    whatsapp_input = st.text_input("Enter your WhatsApp number)", placeholder="+91XXXXXXXXXX")
+    whatsapp_input = st.text_input("Enter your WhatsApp number", placeholder="+91XXXXXXXXXX")
     if st.button("Login"):
         if whatsapp_input in PLAYER_WHATSAPP.values():
             player_name = next(name for name, num in PLAYER_WHATSAPP.items() if num == whatsapp_input)
