@@ -114,7 +114,6 @@ if st.session_state.logged_in_player is None:
             st.success(f"Welcome, {player_name}! 👋")
             st.rerun()
 else:
-    # Tabs with Place Bets dropdown now showing all PDF columns
-    tabs...
+    #Tabs with Place Bets dropdown now showing all PDF columns tabs...
 
 print("Updated code with PDF fixture extraction ready. Full code would parse PDF for all columns: Match No, Date, Home, Away, Venue, Time.")
