@@ -2,5 +2,3 @@ streamlit
 pandas
 pytz
 twilio
-beautifulsoup4
-lxml
