@@ -327,35 +327,37 @@ else:
                         st.success(f"{winner} won! Saved.")
         else:
             st.warning("Access restricted to Porwal only.")
-
+  
+    # --- Enhanced Leaderboard ---
     with tab3:
         st.header("🏆 PPL Leaderboard")
         scores = calculate_leaderboard(data, schedule)
         df_scores = pd.DataFrame(list(scores.items()), columns=["Player", "Points"]).sort_values(by="Points", ascending=False)
         df_scores.index = range(1, len(df_scores) + 1)
-        df_scores["Points"] = df_scores["Points"].apply(lambda x: f"+{x}" if x >= 0 else str(x))
+        df_scores["Points"] = df_scores["Points"].apply(lambda x: f"{x:+d}")
 
-        st.subheader("Season Progress")
+        st.subheader("📈 Season Progress")
         cum_df = calculate_cumulative_scores(data, schedule)
         if len(cum_df) > 1:
             st.line_chart(cum_df)
         else:
             st.info("📊 Chart appears after first match result.")
 
-        st.subheader("Current Standings")
+        st.subheader("🥇 Current Standings")
         for idx, row in df_scores.iterrows():
-            rank_emoji = "🥇" if idx == 1 else "🥈" if idx == 2 else "🥉" if idx == 3 else f"#{idx}"
+            rank_emoji = "🥇" if idx == 1 else "🥈" if idx == 2 else "🥉" if idx == 3 else "🏅"
             col1, col2, col3 = st.columns([1, 3, 2])
             with col1:
-                st.markdown(f"**{rank_emoji}**")
+                st.markdown(f"**{rank_emoji} #{idx}**")
             with col2:
                 st.markdown(f"**{row['Player']}**")
             with col3:
                 st.markdown(row["Points"])
 
+    # --- Match History (unchanged except rounding) ---
     with tab4:
-        st.header("📋 Match History")
-        completed_matches = [m for m in schedule if m["id"] in data.get("results", {})]
+        st.header("📜 Match History")
+        completed_matches = [m for m in schedule if m["id"] in data["results"]]
         if not completed_matches:
             st.info("No completed matches yet.")
         else:
@@ -365,16 +367,18 @@ else:
                 match_bets = data["bets"].get(m_id, {})
                 match_points = calculate_match_points(match_bets, winner)
 
-                with st.expander(f"{match['match']} - Winner: {winner}"):
-                    history_df = pd.DataFrame([
-                        {"Player": p, "Bet": match_bets.get(p, "Auto"), "Points": match_points.get(p, 0)} 
-                        for p in PLAYERS
-                    ])
-                    history_df["Points"] = history_df["Points"].apply(lambda x: f"+{x}" if x >= 0 else str(x))
+                with st.expander(f"✅ {match['match']} | Winner: **{winner}**"):
+                    history_df = pd.DataFrame({
+                        "Player": PLAYERS,
+                        "Bet": [match_bets.get(p, "Auto") for p in PLAYERS],
+                        "Points": [match_points.get(p, 0) for p in PLAYERS]
+                    })
+                    history_df["Points"] = history_df["Points"].apply(lambda x: f"{x:+d}")
                     st.table(history_df)
 
+    # --- Rules (unchanged) ---
     with tab5:
-        st.header("📜 Rules")
+        st.header("📘 Rules")
         st.markdown("""
         - **Players**: Porwal, Baba, Teja, Sahil, Bansal, Naman
         - **Betting**: Change anytime before 10s cutoff
@@ -383,11 +387,16 @@ else:
         - **Fun only!** No money.
         """)
 
+    # --- Matches ---
     with tab6:
         st.header("📅 Fixtures")
         matches_df = pd.DataFrame([
-            {"ID": m["id"], "Match": m["match"], "Team A": m["team_a"], "Team B": m["team_b"], 
-             "Start (IST)": datetime.strptime(m["start_time"], "%Y-%m-%d %H:%M:%S").strftime("%d %b, %I:%M %p")}
-            for m in schedule
+            {
+                "ID": m["id"],
+                "Match": m["match"],
+                "Team A": m["team_a"],
+                "Team B": m["team_b"],
+                "Start (IST)": datetime.strptime(m["start_time"], "%Y-%m-%d %H:%M:%S").strftime("%d %b, %I:%M %p")
+            } for m in schedule
         ])
         st.table(matches_df)
