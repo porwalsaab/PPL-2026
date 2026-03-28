@@ -235,8 +235,9 @@ else:
     with tab1:
         if st.session_state.logged_in_player:
             st.header("Place Your Bet")
-            selected_match_str = st.selectbox("Select Match", [m["match"] for m in schedule])
-            selected_match = next(m for m in schedule if m["match"] == selected_match_str)
+match_options = {f"{m['id']} {m['match']}": m for m in schedule}
+selected_match_str = st.selectbox("Select Match", list(match_options.keys()))
+selected_match = match_options[selected_match_str]
             m_id = selected_match["id"]
 
             match_start_naive = datetime.strptime(selected_match["start_time"], "%Y-%m-%d %H:%M:%S")
