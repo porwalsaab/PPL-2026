@@ -232,67 +232,67 @@ else:
 
     # --- Place Bets (Only own bet) ---
     with tab1:
-    if st.session_state.logged_in_player:
-        st.header("Place Your Bet")
-        selected_match_str = st.selectbox("Select Match", [m["match"] for m in schedule])
-        selected_match = next(m for m in schedule if m["match"] == selected_match_str)
-        m_id = selected_match["id"]
-
-        match_start_naive = datetime.strptime(selected_match["start_time"], "%Y-%m-%d %H:%M:%S")
-        match_start = IST.localize(match_start_naive)
-        cutoff_time = match_start - timedelta(seconds=10)
-        is_past_cutoff = current_time_ist >= cutoff_time
-
-        player = st.session_state.logged_in_player
-
-        if is_past_cutoff:
-            handle_auto_bets(data, selected_match, m_id)
-            st.error(f"Betting for {selected_match['match']} is closed!")
-            st.info("Auto-assigned if no bet placed.")
-            current_bet = data['bets'].get(m_id, {}).get(player, "Auto-assigned")
-            st.metric("Your Bet", current_bet)
-        elif m_id in data["results"]:
-            st.warning("Match already decided!")
-            current_bet = data['bets'].get(m_id, {}).get(player)
-            st.metric("Your Bet", current_bet or "No bet")
-        else:
-            st.write(f"**{selected_match['team_a']}** vs **{selected_match['team_b']}**")
-            st.caption(f"Closes: {cutoff_time.strftime('%d %b %Y, %I:%M:%S %p')} IST")
-
-            if m_id not in data["bets"]:
-                data["bets"][m_id] = {}
-
-            current_bet = data["bets"][m_id].get(player, selected_match["team_a"])
-            new_bet = st.radio("Your Bet:", [selected_match["team_a"], selected_match["team_b"]], 
-                             index=0 if current_bet == selected_match["team_a"] else 1, 
-                             key=f"bet_{m_id}_{player}")
-
-            if st.button("Save My Bet", key=f"save_{m_id}"):
-                data["bets"][m_id][player] = new_bet
-                save_data(data, DATA_FILE)
-                st.success("Bet saved! ✅")
-
-            # --- Show other players’ bets for this match ---
-            st.markdown("### 📊 Other players’ bets")
-            match_bets = data["bets"].get(m_id, {})
-            if match_bets:
-                others_df = pd.DataFrame([
-                    {
-                        "Player": p,
-                        "Bet": match_bets.get(p, "Pending")
-                    }
-                    for p in PLAYERS
-                ])
-                # highlight self with a green dot
-                others_df["Player"] = others_df["Player"].apply(
-                    lambda x: f"🟢 {x}" if x == player else x
-                )
-                st.table(others_df)
+        if st.session_state.logged_in_player:
+            st.header("Place Your Bet")
+            selected_match_str = st.selectbox("Select Match", [m["match"] for m in schedule])
+            selected_match = next(m for m in schedule if m["match"] == selected_match_str)
+            m_id = selected_match["id"]
+    
+            match_start_naive = datetime.strptime(selected_match["start_time"], "%Y-%m-%d %H:%M:%S")
+            match_start = IST.localize(match_start_naive)
+            cutoff_time = match_start - timedelta(seconds=10)
+            is_past_cutoff = current_time_ist >= cutoff_time
+    
+            player = st.session_state.logged_in_player
+    
+            if is_past_cutoff:
+                handle_auto_bets(data, selected_match, m_id)
+                st.error(f"Betting for {selected_match['match']} is closed!")
+                st.info("Auto-assigned if no bet placed.")
+                current_bet = data['bets'].get(m_id, {}).get(player, "Auto-assigned")
+                st.metric("Your Bet", current_bet)
+            elif m_id in data["results"]:
+                st.warning("Match already decided!")
+                current_bet = data['bets'].get(m_id, {}).get(player)
+                st.metric("Your Bet", current_bet or "No bet")
             else:
-                st.caption("No bets placed yet for this match.")
-
-    else:
-        st.warning("Please login to place bets.")
+                st.write(f"**{selected_match['team_a']}** vs **{selected_match['team_b']}**")
+                st.caption(f"Closes: {cutoff_time.strftime('%d %b %Y, %I:%M:%S %p')} IST")
+    
+                if m_id not in data["bets"]:
+                    data["bets"][m_id] = {}
+    
+                current_bet = data["bets"][m_id].get(player, selected_match["team_a"])
+                new_bet = st.radio("Your Bet:", [selected_match["team_a"], selected_match["team_b"]], 
+                                 index=0 if current_bet == selected_match["team_a"] else 1, 
+                                 key=f"bet_{m_id}_{player}")
+    
+                if st.button("Save My Bet", key=f"save_{m_id}"):
+                    data["bets"][m_id][player] = new_bet
+                    save_data(data, DATA_FILE)
+                    st.success("Bet saved! ✅")
+    
+                # --- Show other players’ bets for this match ---
+                st.markdown("### 📊 Other players’ bets")
+                match_bets = data["bets"].get(m_id, {})
+                if match_bets:
+                    others_df = pd.DataFrame([
+                        {
+                            "Player": p,
+                            "Bet": match_bets.get(p, "Pending")
+                        }
+                        for p in PLAYERS
+                    ])
+                    # highlight self with a green dot
+                    others_df["Player"] = others_df["Player"].apply(
+                        lambda x: f"🟢 {x}" if x == player else x
+                    )
+                    st.table(others_df)
+                else:
+                    st.caption("No bets placed yet for this match.")
+    
+        else:
+            st.warning("Please login to place bets.")
         # --- Update Results (Porwal only) ---
     with tab2:
         st.header("Update Match Results")
