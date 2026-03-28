@@ -11,12 +11,12 @@ from twilio.rest import Client
 # --- Configuration ---
 PLAYERS = ["Porwal", "Baba", "Teja", "Sahil", "Bansal", "Naman"]
 PLAYER_WHATSAPP = {
-    "Porwal": "whatsapp:+917710012158",
-    "Baba": "whatsapp:+917710033095",
-    "Teja": "whatsapp:+917045688001",
-    "Sahil": "whatsapp:+919560074024",
-    "Bansal": "whatsapp:+917045688066",
-    "Naman": "whatsapp:+918447959964",
+    "Porwal": "+917710012158",
+    "Baba": "+917710033095",
+    "Teja": "+917045688001",
+    "Sahil": "+919560074024",
+    "Bansal": "+917045688066",
+    "Naman": "+918447959964",
 }
 DATA_FILE = "ipl_bets.json"
 RESULTS_FILE = "match_results.json"
@@ -54,7 +54,7 @@ if 'results_shown' not in st.session_state:
 
 # --- Login Function ---
 def login_via_whatsapp():
-    whatsapp_input = st.text_input("Enter your WhatsApp number (with whatsapp: prefix)", placeholder="whatsapp:+91XXXXXXXXXX")
+    whatsapp_input = st.text_input("Enter your WhatsApp number)", placeholder="+91XXXXXXXXXX")
     if st.button("Login"):
         if whatsapp_input in PLAYER_WHATSAPP.values():
             player_name = next(name for name, num in PLAYER_WHATSAPP.items() if num == whatsapp_input)
